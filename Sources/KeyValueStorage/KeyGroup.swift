@@ -1,0 +1,3 @@
+protocol KeyGroup: Sendable {
+    init()
+}

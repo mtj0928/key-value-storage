@@ -12,6 +12,7 @@ protocol KeyValueStorageBackend: Sendable {
     func setData(_ value: Data, for key: String)
 
     func setArray(_ array: [KeyValueStoragePrimitiveValue], for key: String)
+    func setDictionary(_ dictionary: [String: KeyValueStoragePrimitiveValue], for key: String)
 
     // MARK: - Read
     func bool(for key: String) -> Bool
@@ -22,6 +23,8 @@ protocol KeyValueStorageBackend: Sendable {
     func url(for key: String) -> URL?
     func data(for key: String) -> Data?
     func array<Element: KeyValueStorageComposableValue>(for key: String) -> [Element]?
+    func dictionary<Value: KeyValueStorageComposableValue>(for key: String) -> [String: Value]?
 
     func has(_ key: String) -> Bool
+    func reset()
 }

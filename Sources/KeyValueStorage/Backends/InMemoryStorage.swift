@@ -3,6 +3,10 @@ import os
 
 final class InMemoryStorage: KeyValueStorageBackend {
     private let lockedValues = OSAllocatedUnfairLock<[String: KeyValueStoragePrimitiveValue]>(initialState: [:])
+    public var values: [String: KeyValueStoragePrimitiveValue] {
+        get { lockedValues.withLock { $0 } }
+        set { lockedValues.withLock { $0 = newValue } }
+    }
 
     // MARK: - Write
 
@@ -36,6 +40,10 @@ final class InMemoryStorage: KeyValueStorageBackend {
     
     func setArray(_ array: [KeyValueStoragePrimitiveValue], for key: String) {
         set(value: .array(array), key: key)
+    }
+
+    func setDictionary(_ dictionary: [String : KeyValueStoragePrimitiveValue], for key: String) {
+        set(value: .dictionary(dictionary), key: key)
     }
 
     private func set(value: KeyValueStoragePrimitiveValue, key: String) {
@@ -78,6 +86,10 @@ final class InMemoryStorage: KeyValueStorageBackend {
         read(for: key, default: nil)
     }
 
+    func dictionary<Value>(for key: String) -> [String : Value]? where Value : KeyValueStorageComposableValue {
+        read(for: key, default: nil)
+    }
+
     private func read<T: Sendable>(for key: String, default defaultValue: T) -> T {
         lockedValues.withLock { values in
             (values[key]?.anyValue as? T) ?? defaultValue
@@ -87,6 +99,12 @@ final class InMemoryStorage: KeyValueStorageBackend {
     func has(_ key: String) -> Bool {
         lockedValues.withLock { values in
             values.keys.contains(key)
+        }
+    }
+
+    func reset() {
+        lockedValues.withLock { values in
+            values.removeAll()
         }
     }
 }

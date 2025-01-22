@@ -9,6 +9,7 @@ enum KeyValueStoragePrimitiveValue: Sendable {
     case url(URL)
     case data(Data)
     case array([KeyValueStoragePrimitiveValue])
+    case dictionary([String: KeyValueStoragePrimitiveValue])
 
     var anyValue: any Sendable {
         switch self {
@@ -20,6 +21,7 @@ enum KeyValueStoragePrimitiveValue: Sendable {
         case .url(let url): url
         case .data(let data): data
         case .array(let array): array.map { $0.anyValue }
+        case .dictionary(let dictionary): dictionary.mapValues { $0.anyValue }
         }
     }
 }

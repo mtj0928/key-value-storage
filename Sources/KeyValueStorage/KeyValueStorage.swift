@@ -2,23 +2,23 @@ import Foundation
 
 @dynamicMemberLookup
 struct KeyValueStorage<Keys: KeyGroup>: Sendable {
-    private let backend: any KeyValueStorageBackend
-    private let keys = Keys()
+    public let backend: any KeyValueStorageBackend
+    public let keys: Keys
 
-    init(backend: any KeyValueStorageBackend) {
+    private init(backend: some KeyValueStorageBackend, keys: Keys) {
         self.backend = backend
+        self.keys = Keys()
     }
 
-    subscript<Value: KeyValueStorageValue>(
-        dynamicMember keyPath: KeyPath<Keys, KeyDefinition<Value>>
-    ) -> Value {
-        get {
-            let definition = keys[keyPath: keyPath]
-            return Value.fetch(for: definition.key, from: backend) ?? definition.defaultValue
-        }
-        nonmutating set {
-            let definition = keys[keyPath: keyPath]
-            return newValue.store(for: definition.key, from: backend)
-        }
+    init(backend: some KeyValueStorageBackend) {
+        self.backend = backend
+        self.keys = Keys()
+    }
+
+    subscript<NestedGroup: KeyGroup>(
+        dynamicMember keyPath: KeyPath<Keys, NestedGroup>
+    ) -> KeyValueStorage<NestedGroup> {
+        let group = keys[keyPath: keyPath]
+        return KeyValueStorage<NestedGroup>(backend: backend, keys: group)
     }
 }

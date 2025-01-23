@@ -1,7 +1,11 @@
+import Combine
 import Testing
 import Foundation
+import Observation
+import os
 @testable import KeyValueStorage
 
+@Suite(.serialized)
 struct KeyValueStorageTest {
     @Test(arguments: TargetBackend.allCases)
     func primitiveUsage(_ targetBackend: TargetBackend) async throws {
@@ -73,7 +77,238 @@ struct KeyValueStorageTest {
 
         storage.foo = Foo(number: 123)
         #expect(storage.foo.number == 123)
-        #expect(storage.foo.bool == false)
+        #expect(!storage.foo.bool)
+    }
+
+    // MARK: - Observation
+
+    @Test(arguments: TargetBackend.allCases)
+    func observableUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        withObservationTracking {
+            _ = storage.integer
+        } onChange: {
+            isCalled.withLock {
+                $0 = true
+            }
+        }
+        storage.integer += 1
+
+        #expect(isCalled.withLock { $0 })
+        #expect(storage.integer == 124)
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func jsonObservableUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        withObservationTracking {
+            _ = storage.foo.bool
+        } onChange: {
+            isCalled.withLock {
+                $0 = true
+            }
+        }
+        storage.foo.number += 1
+
+        #expect(isCalled.withLock { $0 })
+        #expect(storage.foo.number == 124)
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func nestedObservableUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        withObservationTracking {
+            _ = storage.group.string
+        } onChange: {
+            isCalled.withLock {
+                $0 = true
+            }
+        }
+        storage.integer += 1
+        #expect(isCalled.withLock { !$0 })
+
+        storage.group.foo.number = 123456
+        #expect(isCalled.withLock { !$0 })
+
+        storage.group.string = "hello"
+        try await Task.sleep(for: .seconds(0.1))
+        #expect(isCalled.withLock { $0 })
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func nestedObservableJSONUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        withObservationTracking {
+            _ = storage.group.foo
+        } onChange: {
+            isCalled.withLock {
+                $0 = true
+            }
+        }
+
+        storage.group.foo.number = 123456
+        try await Task.sleep(for: .seconds(0.5))
+        #expect(isCalled.withLock { $0 })
+    }
+
+    // MARK: - Combine
+
+    @Test(arguments: TargetBackend.allCases)
+    func combineUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+
+        let cancellable = storage.publisher(key: \.integer)
+            .sink {
+                isCalled.withLock {
+                    $0 = true
+                }
+            }
+        storage.integer += 1
+
+        #expect(isCalled.withLock { $0 })
+        #expect(storage.integer == 124)
+        _ = cancellable
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func jsonCombineUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        let cancellable = storage.publisher(key: \.foo)
+            .sink {
+                isCalled.withLock {
+                    $0 = true
+                }
+            }
+        storage.foo.number += 1
+        #expect(isCalled.withLock { $0 })
+        _ = cancellable
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func nestedCombineUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        let cancellable = storage.publisher(key: \.group.string)
+            .sink {
+                isCalled.withLock {
+                    $0 = true
+                }
+            }
+        storage.group.string = "123"
+        #expect(isCalled.withLock { $0 })
+        _ = cancellable
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func nestedCombineJSONUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+        let cancellable = storage.publisher(key: \.group.foo)
+            .sink {
+                isCalled.withLock {
+                    $0 = true
+                }
+            }
+        storage.group.foo.number = 123456
+        #expect(isCalled.withLock { $0 })
+        _ = cancellable
+    }
+
+    // MARK: - AsyncSequence
+
+    @Test(arguments: TargetBackend.allCases)
+    func asyncSequenceUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+
+        let task = Task {
+            for await _ in storage.stream(key: \.integer) {
+                isCalled.withLock { $0 = true }
+                return
+            }
+        }
+        try await Task.sleep(for: .seconds(0.1))
+        storage.integer += 1
+
+        try await Task.sleep(for: .seconds(0.1))
+        #expect(isCalled.withLock { $0 })
+        task.cancel()
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func asyncSequenceJSONUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+
+        let task = Task {
+            for await _ in storage.stream(key: \.foo) {
+                isCalled.withLock { $0 = true }
+                return
+            }
+        }
+        try await Task.sleep(for: .seconds(0.1))
+        storage.foo.bool = true
+
+        try await Task.sleep(for: .seconds(0.1))
+        #expect(isCalled.withLock { $0 })
+        task.cancel()
+
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func asyncSequenceNestedUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+
+        let task = Task {
+            for await _ in storage.stream(key: \.group.string) {
+                isCalled.withLock { $0 = true }
+                return
+            }
+        }
+        try await Task.sleep(for: .seconds(0.1))
+        storage.group.string = "Hello"
+
+        try await Task.sleep(for: .seconds(0.1))
+        #expect(isCalled.withLock { $0 })
+        task.cancel()
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func asyncSequenceNestedJSONUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        let isCalled = OSAllocatedUnfairLock(initialState: false)
+
+        let task = Task {
+            for await _ in storage.stream(key: \.group.foo) {
+                isCalled.withLock { $0 = true }
+                return
+            }
+        }
+        try await Task.sleep(for: .seconds(0.1))
+        storage.group.foo.number = 123456
+
+        try await Task.sleep(for: .seconds(0.1))
+        #expect(isCalled.withLock { $0 })
+        task.cancel()
     }
 }
 
@@ -89,15 +324,16 @@ struct TestKeys: KeyGroup {
     // Codable
     let foo = JSONKeyDefinition(key: "foo", defaultValue: Foo())
 
+    // Nested group
     let group = NestedGroup()
 
     struct NestedGroup: KeyGroup {
-        let string = KeyDefinition<String?>(key: "nested.string")
-        let foo = JSONKeyDefinition(key: "nested.foo", defaultValue: Foo())
+        let string = KeyDefinition<String?>(key: "nested_string")
+        let foo = JSONKeyDefinition(key: "nested_foo", defaultValue: Foo())
     }
 }
 
 struct Foo: Codable, Sendable, Equatable {
-    var number = 100
+    var number = 123
     var bool = false
 }

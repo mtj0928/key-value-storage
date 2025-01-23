@@ -10,7 +10,6 @@ protocol KeyValueStorageBackend: Sendable {
     func setString(_ value: String, for key: String)
     func setURL(_ value: URL, for key: String)
     func setData(_ value: Data, for key: String)
-
     func setArray(_ array: [KeyValueStoragePrimitiveValue], for key: String)
     func setDictionary(_ dictionary: [String: KeyValueStoragePrimitiveValue], for key: String)
 
@@ -25,6 +24,25 @@ protocol KeyValueStorageBackend: Sendable {
     func array<Element: KeyValueStorageComposableValue>(for key: String) -> [Element]?
     func dictionary<Value: KeyValueStorageComposableValue>(for key: String) -> [String: Value]?
 
+    // MARK: - Utility
     func has(_ key: String) -> Bool
     func reset()
+    func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable
+}
+
+final class KeyValueObserveCancellable {
+    var cancelHandler: (() -> Void)?
+
+    init(cancel: @escaping () -> Void) {
+        self.cancelHandler = cancel
+    }
+
+    deinit {
+        cancel()
+    }
+
+    func cancel() {
+        cancelHandler?()
+        cancelHandler = nil
+    }
 }

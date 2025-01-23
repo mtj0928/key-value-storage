@@ -85,4 +85,12 @@ extension UserDefaults: KeyValueStorageBackend {
             removeObject(forKey: key)
         }
     }
+
+    func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
+        let observer = KeyValueObserver(onChange: changes)
+        addObserver(observer, forKeyPath: key, options: [], context: nil)
+        return KeyValueObserveCancellable { [weak self] in
+            self?.removeObserver(observer, forKeyPath: key)
+        }
+    }
 }

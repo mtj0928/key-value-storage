@@ -7,7 +7,7 @@ struct KeyValueStorage<Keys: KeyGroup>: Sendable {
 
     private init(backend: some KeyValueStorageBackend, keys: Keys) {
         self.backend = backend
-        self.keys = Keys()
+        self.keys = keys
     }
 
     init(backend: some KeyValueStorageBackend) {

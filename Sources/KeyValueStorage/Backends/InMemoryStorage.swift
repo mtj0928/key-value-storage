@@ -1,7 +1,7 @@
 import Foundation
 import os
 
-final class InMemoryStorage: KeyValueStorageBackend {
+final class InMemoryStorage: NSObject, KeyValueStorageBackend {
     private let lockedValues = OSAllocatedUnfairLock<[String: KeyValueStoragePrimitiveValue]>(initialState: [:])
     public var values: [String: KeyValueStoragePrimitiveValue] {
         get { lockedValues.withLock { $0 } }
@@ -47,9 +47,12 @@ final class InMemoryStorage: KeyValueStorageBackend {
     }
 
     private func set(value: KeyValueStoragePrimitiveValue, key: String) {
+        let key = internalKey(key)
+        willChangeValue(forKey: key)
         lockedValues.withLock { values in
             values[key] = value
         }
+        didChangeValue(forKey: key)
     }
 
     // MARK: - Read
@@ -91,13 +94,15 @@ final class InMemoryStorage: KeyValueStorageBackend {
     }
 
     private func read<T: Sendable>(for key: String, default defaultValue: T) -> T {
-        lockedValues.withLock { values in
+        let key = internalKey(key)
+        return lockedValues.withLock { values in
             (values[key]?.anyValue as? T) ?? defaultValue
         }
     }
 
     func has(_ key: String) -> Bool {
-        lockedValues.withLock { values in
+        let key = internalKey(key)
+        return lockedValues.withLock { values in
             values.keys.contains(key)
         }
     }
@@ -106,5 +111,18 @@ final class InMemoryStorage: KeyValueStorageBackend {
         lockedValues.withLock { values in
             values.removeAll()
         }
+    }
+
+    func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
+        let key = internalKey(key)
+        let observer = KeyValueObserver(onChange: changes)
+        addObserver(observer, forKeyPath: key, options: [], context: nil)
+        return KeyValueObserveCancellable { [weak self] in
+            self?.removeObserver(observer, forKeyPath: key)
+        }
+    }
+
+    private func internalKey(_ string: String) -> String {
+        string.replacingOccurrences(of: ".", with: "_")
     }
 }

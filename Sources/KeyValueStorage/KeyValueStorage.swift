@@ -1,7 +1,7 @@
 import Foundation
 
 @dynamicMemberLookup
-struct KeyValueStorage<Keys: KeyGroup>: Sendable {
+public struct KeyValueStorage<Keys: KeyGroup>: Sendable {
     public let backend: any KeyValueStorageBackend
     public let keys: Keys
 
@@ -10,12 +10,12 @@ struct KeyValueStorage<Keys: KeyGroup>: Sendable {
         self.keys = keys
     }
 
-    init(backend: some KeyValueStorageBackend) {
+    public init(backend: some KeyValueStorageBackend) {
         self.backend = backend
         self.keys = Keys()
     }
 
-    subscript<NestedGroup: KeyGroup>(
+    public subscript<NestedGroup: KeyGroup>(
         dynamicMember keyPath: KeyPath<Keys, NestedGroup>
     ) -> KeyValueStorage<NestedGroup> {
         let group = keys[keyPath: keyPath]

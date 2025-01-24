@@ -2,10 +2,8 @@
 import Observation
 import os
 
-typealias KeyValueStoragePublisher = AsyncPublisher<AnyPublisher<Void, Never>>
-
 extension KeyValueStorage {
-    subscript<Value: KeyValueStorageValue>(
+    public subscript<Value: KeyValueStorageValue>(
         dynamicMember keyPath: KeyPath<Keys, KeyDefinition<Value>>
     ) -> Value {
         get {
@@ -20,34 +18,34 @@ extension KeyValueStorage {
         }
     }
 
-    func publisher<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) -> any Publisher<Void, Never> {
+    public func publisher<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) -> any Publisher<Void, Never> {
         let definition = keys[keyPath: key]
         definition.observeIfNeed(backend)
         return definition.publisher
     }
 
-    func stream<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) -> KeyValueStoragePublisher {
+    public func stream<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) -> KeyValueStoragePublisher {
         publisher(key: key).eraseToAnyPublisher().values
     }
 }
 
 @Observable
-final class KeyDefinition<Value: KeyValueStorageValue>: Sendable {
-    let key: String
-    let defaultValue: Value
-    var publisher: any Publisher<Void, Never> { subject }
+public final class KeyDefinition<Value: KeyValueStorageValue>: Sendable {
+    public let key: String
+    public let defaultValue: Value
+    public var publisher: any Publisher<Void, Never> { subject }
     private let subject = PassthroughSubject<Void, Never>()
 
     private let logger = Logger(subsystem: "KeyValueStorage", category: "KeyDefinition")
     private let observeCancellable = OSAllocatedUnfairLock<KeyValueObserveCancellable?>(uncheckedState: nil)
 
-    init(key: String, defaultValue: Value) {
+    public init(key: String, defaultValue: Value) {
         self.key = key
         self.defaultValue = defaultValue
         validate(key: key)
     }
 
-    init<Wrapped: KeyValueStorageValue>(key: String) where Value == Optional<Wrapped> {
+    public init<Wrapped: KeyValueStorageValue>(key: String) where Value == Optional<Wrapped> {
         self.key = key
         self.defaultValue = nil
         validate(key: key)

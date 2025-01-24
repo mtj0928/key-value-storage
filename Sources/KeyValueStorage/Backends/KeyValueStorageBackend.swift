@@ -1,6 +1,6 @@
 import Foundation
 
-protocol KeyValueStorageBackend: Sendable {
+public protocol KeyValueStorageBackend: Sendable {
 
     // MARK: - Write
     func setBool(_ value: Bool, for key: String)
@@ -30,7 +30,7 @@ protocol KeyValueStorageBackend: Sendable {
     func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable
 }
 
-final class KeyValueObserveCancellable {
+public final class KeyValueObserveCancellable {
     var cancelHandler: (() -> Void)?
 
     init(cancel: @escaping () -> Void) {
@@ -41,7 +41,7 @@ final class KeyValueObserveCancellable {
         cancel()
     }
 
-    func cancel() {
+    public func cancel() {
         cancelHandler?()
         cancelHandler = nil
     }

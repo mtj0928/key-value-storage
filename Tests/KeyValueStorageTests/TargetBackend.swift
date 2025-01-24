@@ -1,4 +1,4 @@
-@testable import KeyValueStorage
+import KeyValueStorage
 import Foundation
 
 enum TargetBackend: CaseIterable {

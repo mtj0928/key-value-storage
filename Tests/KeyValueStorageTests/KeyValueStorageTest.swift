@@ -3,7 +3,7 @@ import Testing
 import Foundation
 import Observation
 import os
-@testable import KeyValueStorage
+import KeyValueStorage
 
 @Suite(.serialized)
 struct KeyValueStorageTest {

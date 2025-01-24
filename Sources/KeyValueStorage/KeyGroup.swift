@@ -1,3 +1,3 @@
-protocol KeyGroup: Sendable {
+public protocol KeyGroup: Sendable {
     init()
 }

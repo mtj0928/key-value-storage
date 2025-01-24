@@ -1,7 +1,7 @@
 import Foundation
 import os
 
-final class InMemoryStorage: NSObject, KeyValueStorageBackend {
+public final class InMemoryStorage: NSObject, KeyValueStorageBackend {
     private let lockedValues = OSAllocatedUnfairLock<[String: KeyValueStoragePrimitiveValue]>(initialState: [:])
     public var values: [String: KeyValueStoragePrimitiveValue] {
         get { lockedValues.withLock { $0 } }
@@ -10,39 +10,39 @@ final class InMemoryStorage: NSObject, KeyValueStorageBackend {
 
     // MARK: - Write
 
-    func setBool(_ value: Bool, for key: String) {
+    public func setBool(_ value: Bool, for key: String) {
         set(value: .bool(value), key: key)
     }
     
-    func setInt(_ value: Int, for key: String) {
+    public func setInt(_ value: Int, for key: String) {
         set(value: .int(value), key: key)
     }
     
-    func setFloat(_ value: Float, for key: String) {
+    public func setFloat(_ value: Float, for key: String) {
         set(value: .float(value), key: key)
     }
     
-    func setDouble(_ value: Double, for key: String) {
+    public func setDouble(_ value: Double, for key: String) {
         set(value: .double(value), key: key)
     }
     
-    func setString(_ value: String, for key: String) {
+    public func setString(_ value: String, for key: String) {
         set(value: .string(value), key: key)
     }
     
-    func setURL(_ value: URL, for key: String) {
+    public func setURL(_ value: URL, for key: String) {
         set(value: .url(value), key: key)
     }
     
-    func setData(_ value: Data, for key: String) {
+    public func setData(_ value: Data, for key: String) {
         set(value: .data(value), key: key)
     }
     
-    func setArray(_ array: [KeyValueStoragePrimitiveValue], for key: String) {
+    public func setArray(_ array: [KeyValueStoragePrimitiveValue], for key: String) {
         set(value: .array(array), key: key)
     }
 
-    func setDictionary(_ dictionary: [String : KeyValueStoragePrimitiveValue], for key: String) {
+    public func setDictionary(_ dictionary: [String : KeyValueStoragePrimitiveValue], for key: String) {
         set(value: .dictionary(dictionary), key: key)
     }
 
@@ -57,39 +57,39 @@ final class InMemoryStorage: NSObject, KeyValueStorageBackend {
 
     // MARK: - Read
 
-    func bool(for key: String) -> Bool {
+    public func bool(for key: String) -> Bool {
         read(for: key, default: false)
     }
     
-    func int(for key: String) -> Int {
+    public func int(for key: String) -> Int {
         read(for: key, default: 0)
     }
     
-    func float(for key: String) -> Float {
+    public func float(for key: String) -> Float {
         read(for: key, default: 0)
     }
     
-    func double(for key: String) -> Double {
+    public func double(for key: String) -> Double {
         read(for: key, default: 0)
     }
     
-    func string(for key: String) -> String? {
+    public func string(for key: String) -> String? {
         read(for: key, default: nil)
     }
     
-    func url(for key: String) -> URL? {
+    public func url(for key: String) -> URL? {
         read(for: key, default: nil)
     }
     
-    func data(for key: String) -> Data? {
+    public func data(for key: String) -> Data? {
         read(for: key, default: nil)
     }
     
-    func array<Element: Sendable>(for key: String) -> [Element]? where Element : KeyValueStorageComposableValue {
+    public func array<Element: Sendable>(for key: String) -> [Element]? where Element : KeyValueStorageComposableValue {
         read(for: key, default: nil)
     }
 
-    func dictionary<Value>(for key: String) -> [String : Value]? where Value : KeyValueStorageComposableValue {
+    public func dictionary<Value>(for key: String) -> [String : Value]? where Value : KeyValueStorageComposableValue {
         read(for: key, default: nil)
     }
 
@@ -100,20 +100,20 @@ final class InMemoryStorage: NSObject, KeyValueStorageBackend {
         }
     }
 
-    func has(_ key: String) -> Bool {
+    public func has(_ key: String) -> Bool {
         let key = internalKey(key)
         return lockedValues.withLock { values in
             values.keys.contains(key)
         }
     }
 
-    func reset() {
+    public func reset() {
         lockedValues.withLock { values in
             values.removeAll()
         }
     }
 
-    func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
+    public func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
         let key = internalKey(key)
         let observer = KeyValueObserver(onChange: changes)
         addObserver(observer, forKeyPath: key, options: [], context: nil)

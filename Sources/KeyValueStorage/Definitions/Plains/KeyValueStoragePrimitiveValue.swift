@@ -1,6 +1,6 @@
 import Foundation
 
-enum KeyValueStoragePrimitiveValue: Sendable {
+public enum KeyValueStoragePrimitiveValue: Sendable {
     case bool(Bool)
     case int(Int)
     case float(Float)
@@ -11,7 +11,7 @@ enum KeyValueStoragePrimitiveValue: Sendable {
     case array([KeyValueStoragePrimitiveValue])
     case dictionary([String: KeyValueStoragePrimitiveValue])
 
-    var anyValue: any Sendable {
+    public var anyValue: any Sendable {
         switch self {
         case .bool(let bool): bool
         case .int(let int): int

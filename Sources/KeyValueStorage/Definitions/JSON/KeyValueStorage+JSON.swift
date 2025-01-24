@@ -4,7 +4,7 @@ import Observation
 import os
 
 extension KeyValueStorage {
-    subscript<Value: Codable>(
+    public subscript<Value: Codable>(
         dynamicMember keyPath: KeyPath<Keys, JSONKeyDefinition<Value>>
     ) -> Value {
         get {
@@ -32,30 +32,30 @@ extension KeyValueStorage {
         }
     }
 
-    func publisher<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) -> any Publisher<Void, Never> {
+    public func publisher<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) -> any Publisher<Void, Never> {
         let definition = keys[keyPath: key]
         definition.observeIfNeed(backend)
         return definition.publisher
     }
 
-    func stream<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) -> KeyValueStoragePublisher {
+    public func stream<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) -> KeyValueStoragePublisher {
         publisher(key: key).eraseToAnyPublisher().values
     }
 }
 
 @Observable
-final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
-    let key: String
-    let defaultValue: Value
-    let encoder: JSONEncoder
-    let decoder: JSONDecoder
-    var publisher: any Publisher<Void, Never> { subject }
+public final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
+    public let key: String
+    public let defaultValue: Value
+    public let encoder: JSONEncoder
+    public let decoder: JSONDecoder
+    public var publisher: any Publisher<Void, Never> { subject }
     private let subject = PassthroughSubject<Void, Never>()
 
     private let logger = Logger(subsystem: "KeyValueStorage", category: "JSONKeyDefinition")
     private let observeCancellable = OSAllocatedUnfairLock<KeyValueObserveCancellable?>(uncheckedState: nil)
 
-    init(
+    public init(
         key: String,
         defaultValue: Value,
         encoder: JSONEncoder = JSONEncoder(),
@@ -67,7 +67,7 @@ final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
         self.decoder = decoder
     }
 
-    init<Wrapped: Codable>(
+    public init<Wrapped: Codable>(
         key: String,
         encoder: JSONEncoder = JSONEncoder(),
         decoder: JSONDecoder = JSONDecoder()

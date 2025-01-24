@@ -77,12 +77,23 @@ extension Data: KeyValueStorageValue {
     }
 }
 
-extension Optional: KeyValueStorageValue where Wrapped: KeyValueStorageValue{
+extension Optional: KeyValueStorageValue where Wrapped: KeyValueStorageValue {
     public func store(for key: String, from backend: some KeyValueStorageBackend) {
         self?.store(for: key, from: backend)
     }
     
     public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Optional<Wrapped>? {
         Wrapped.fetch(for: key, from: backend)
+    }
+}
+
+extension KeyValueStorageValue where Self: RawRepresentable, RawValue: KeyValueStorageValue {
+    public func store(for key: String, from backend: some KeyValueStorageBackend) {
+        rawValue.store(for: key, from: backend)
+    }
+
+    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Self? {
+        guard let rawValue = RawValue.fetch(for: key, from: backend) else { return nil }
+        return Self(rawValue: rawValue)
     }
 }

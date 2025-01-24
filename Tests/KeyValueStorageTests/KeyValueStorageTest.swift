@@ -14,6 +14,7 @@ struct KeyValueStorageTest {
         #expect(storage.integer == 123)
         #expect(!storage.bool)
         #expect(storage.string == nil)
+        #expect(storage.rawValueEnum == .bbb)
 
         storage.integer = 456
         #expect(storage.integer == 456)
@@ -23,6 +24,9 @@ struct KeyValueStorageTest {
 
         storage.string = "foo"
         #expect(storage.string == "foo")
+
+        storage.rawValueEnum = .ccc
+        #expect(storage.rawValueEnum == .ccc)
     }
 
     @Test(arguments: TargetBackend.allCases)
@@ -324,6 +328,9 @@ struct TestKeys: KeyGroup {
     // Codable
     let foo = JSONKeyDefinition(key: "foo", defaultValue: Foo())
 
+    // Codable
+    let rawValueEnum = KeyDefinition(key: "rawValueEnum", defaultValue: RawValueEnum.bbb)
+
     // Nested group
     let group = NestedGroup()
 
@@ -336,4 +343,8 @@ struct TestKeys: KeyGroup {
 struct Foo: Codable, Sendable, Equatable {
     var number = 123
     var bool = false
+}
+
+enum RawValueEnum: Int, KeyValueStorageValue {
+    case aaa, bbb, ccc
 }

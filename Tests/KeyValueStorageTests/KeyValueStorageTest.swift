@@ -94,6 +94,10 @@ struct KeyValueStorageTest {
 
         storage.group.foo.number = 123456
         #expect(storage.group.foo.number == 123456)
+
+        #expect(storage.group.groupB.string == nil)
+        storage.group.groupB.string = "world"
+        #expect(storage.group.groupB.string == "world")
     }
 
     @Test(arguments: TargetBackend.allCases)
@@ -373,11 +377,16 @@ struct TestKeys: KeyGroup {
     ])
 
     // Nested group
-    let group = NestedGroup()
+    let group = NestedGroupA()
 
-    struct NestedGroup: KeyGroup {
-        let string = KeyDefinition<String?>(key: "nested_string")
+    struct NestedGroupA: KeyGroup {
+        let string = KeyDefinition<String?>(key: "nested_A_string")
         let foo = JSONKeyDefinition(key: "nested_foo", defaultValue: Foo())
+        let groupB = NestedGroupB()
+    }
+
+    struct NestedGroupB: KeyGroup {
+        let string = KeyDefinition<String?>(key: "nested_B_string")
     }
 }
 
@@ -401,12 +410,11 @@ struct UserID: ExpressibleByStringLiteral, KeyValueStorageValue, Equatable {
         self.value = value
     }
 
-    func storedValue() -> (any Sendable) {
+    func storedValue() -> String {
         value
     }
 
-    static func keyValueStorageValue(from value: (any Sendable)) -> UserID? {
-        guard let value = value as? String else { return nil }
-        return UserID(value: value)
+    static func keyValueStorageValue(from value: String) -> UserID? {
+        UserID(value: value)
     }
 }

@@ -10,7 +10,7 @@ extension KeyValueStorage {
             let definition = keys[keyPath: keyPath]
             definition.record()
             definition.observeIfNeed(backend)
-            let rawValue = backend.read(for: definition.key)
+            let rawValue = backend.read(for: definition.key) as? Value.StoredValue
             return rawValue.flatMap { Value.keyValueStorageValue(from: $0) } ?? definition.defaultValue
         }
         nonmutating set {

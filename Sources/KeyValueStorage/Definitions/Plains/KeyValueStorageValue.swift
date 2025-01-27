@@ -1,9 +1,11 @@
 import Foundation
 
 public protocol KeyValueStorageValue: Sendable {
+    associatedtype StoredValue: Sendable
+
     var isNil: Bool { get }
-    func storedValue() -> (any Sendable)
-    static func keyValueStorageValue(from value: (any Sendable)) -> Self?
+    func storedValue() -> StoredValue
+    static func keyValueStorageValue(from value: StoredValue) -> Self?
 }
 
 extension KeyValueStorageValue {
@@ -13,12 +15,12 @@ extension KeyValueStorageValue {
 fileprivate protocol PrimitiveStorageValue: Sendable, KeyValueStorageValue {}
 
 extension PrimitiveStorageValue {
-    public func storedValue() -> (any Sendable) {
+    public func storedValue() -> Self {
         self
     }
 
-    public static func keyValueStorageValue(from value: (any Sendable)) -> Self? {
-        value as? Self
+    public static func keyValueStorageValue(from value: Self) -> Self? {
+        value
     }
 }
 
@@ -33,24 +35,22 @@ extension URL: PrimitiveStorageValue {}
 extension Data: PrimitiveStorageValue {}
 
 extension Array: KeyValueStorageValue where Element: KeyValueStorageValue {
-    public func storedValue() -> (any Sendable) {
+    public func storedValue() -> [Element.StoredValue] {
         map { $0.storedValue() }
     }
 
-    public static func keyValueStorageValue(from value: (any Sendable)) -> [Element]? {
-        guard let array = value as? [(any Sendable)] else { return nil }
-        return array.compactMap { Element.keyValueStorageValue(from: $0) }
+    public static func keyValueStorageValue(from value: [Element.StoredValue]) -> [Element]? {
+        value.compactMap { Element.keyValueStorageValue(from: $0) }
     }
 }
 
 extension Dictionary: KeyValueStorageValue where Key == String, Value: KeyValueStorageValue {
-    public func storedValue() -> (any Sendable) {
+    public func storedValue() -> [String: Value.StoredValue] {
         mapValues { $0.storedValue() }
     }
 
-    public static func keyValueStorageValue(from value: (any Sendable)) -> Dictionary<String, Value>? {
-        guard let dictionary = value as? [String: (any Sendable)] else { return nil }
-        return dictionary.compactMapValues { Value.keyValueStorageValue(from: $0) }
+    public static func keyValueStorageValue(from value: [String: Value.StoredValue]) -> Dictionary<String, Value>? {
+        value.compactMapValues { Value.keyValueStorageValue(from: $0) }
     }
 }
 
@@ -62,22 +62,22 @@ extension Optional: KeyValueStorageValue where Wrapped: KeyValueStorageValue {
         }
     }
 
-    public func storedValue() -> (any Sendable) {
-        guard let wrapped = self else { return self }
+    public func storedValue() -> Wrapped.StoredValue? {
+        guard let wrapped = self else { return nil }
         return wrapped.storedValue()
     }
 
-    public static func keyValueStorageValue(from value: (any Sendable)) ->  Optional<Wrapped>? {
-        Wrapped.keyValueStorageValue(from: value)
+    public static func keyValueStorageValue(from value: Wrapped.StoredValue?) ->  Optional<Wrapped>? {
+        value.flatMap { Wrapped.keyValueStorageValue(from: $0) }
     }
 }
 
 extension KeyValueStorageValue where Self: RawRepresentable, RawValue: KeyValueStorageValue {
-    public func storedValue() -> (any Sendable) {
+    public func storedValue() -> RawValue.StoredValue {
         rawValue.storedValue()
     }
 
-    public static func keyValueStorageValue(from value: (any Sendable)) -> Self? {
+    public static func keyValueStorageValue(from value: RawValue.StoredValue) -> Self? {
         guard let rawValue = RawValue.keyValueStorageValue(from: value) else { return nil }
         return Self(rawValue: rawValue)
     }

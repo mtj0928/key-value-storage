@@ -12,7 +12,7 @@ extension KeyValueStorage {
             definition.record()
             definition.observeIfNeed(backend)
             do {
-                guard let data = backend.data(for: definition.key) else {
+                guard let data = backend.read(for: definition.key) as? Data else {
                     return definition.defaultValue
                 }
                 return try definition.decoder.decode(Value.self, from: data)
@@ -25,7 +25,7 @@ extension KeyValueStorage {
             let definition = keys[keyPath: keyPath]
             do {
                 let data = try definition.encoder.encode(newValue)
-                return backend.setData(data, for: definition.key)
+                backend.write(data, for: definition.key)
             } catch {
                 assertionFailure("Should not be called: \(error)")
             }

@@ -7,6 +7,7 @@ import KeyValueStorage
 
 @Suite(.serialized)
 struct KeyValueStorageTest {
+
     @Test(arguments: TargetBackend.allCases)
     func primitiveUsage(_ targetBackend: TargetBackend) async throws {
         let backend = targetBackend.makeBackend()
@@ -27,16 +28,23 @@ struct KeyValueStorageTest {
 
         storage.rawValueEnum = .ccc
         #expect(storage.rawValueEnum == .ccc)
+
+        storage.string = nil
+        #expect(storage.string == nil)
     }
 
     @Test(arguments: TargetBackend.allCases)
     func arrayUsage(_ targetBackend: TargetBackend) {
         let backend = targetBackend.makeBackend()
         let storage = KeyValueStorage<TestKeys>(backend: backend)
-        #expect(storage.array == [])
+        #expect(storage.array == ["aaa"])
 
-        storage.array.append("foo")
-        #expect(storage.array == ["foo"])
+        storage.array.append("bbb")
+        #expect(storage.array == ["aaa", "bbb"])
+
+        #expect(storage.rawValueArray == [.aaa])
+        storage.rawValueArray = [.aaa, .bbb]
+        #expect(storage.rawValueArray == [.aaa, .bbb])
     }
 
     @Test(arguments: TargetBackend.allCases)
@@ -56,6 +64,21 @@ struct KeyValueStorageTest {
                 "bar": [1, 3, 5]
             ],
             "piyo": ["baz": [2, 4, 6]]
+        ])
+    }
+
+    @Test(arguments: TargetBackend.allCases)
+    func complexDictionaryUsage(_ targetBackend: TargetBackend) {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        #expect(storage.complexDictionary == ["A": ["B": [.aaa]]])
+
+        storage.complexDictionary["A-1"] = ["B-1": [.bbb]]
+        storage.complexDictionary["A"]?["B"] = [.aaa, .ccc]
+
+        #expect(storage.complexDictionary == [
+            "A": ["B": [.aaa, .ccc]],
+            "A-1": ["B-1": [.bbb]]
         ])
     }
 
@@ -314,6 +337,16 @@ struct KeyValueStorageTest {
         #expect(isCalled.withLock { $0 })
         task.cancel()
     }
+
+    @Test(arguments: TargetBackend.allCases)
+    func userID(_ targetBackend: TargetBackend) {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+        #expect(storage.userID == nil)
+
+        storage.userID = "userid"
+        #expect(storage.userID == "userid")
+    }
 }
 
 struct TestKeys: KeyGroup {
@@ -322,14 +355,22 @@ struct TestKeys: KeyGroup {
     let double = KeyDefinition(key: "double", defaultValue: 3.14)
     let bool = KeyDefinition(key: "bool", defaultValue: false)
     let string = KeyDefinition<String?>(key: "string")
-    let array = KeyDefinition<[String]>(key: "array", defaultValue: [])
+    let array = KeyDefinition<[String]>(key: "array", defaultValue: ["aaa"])
     let dictionary = KeyDefinition<[String: [String: [Int]]]>(key: "dictionary", defaultValue: [:])
 
     // Codable
     let foo = JSONKeyDefinition(key: "foo", defaultValue: Foo())
 
-    // Codable
+    // Custom type
+    let userID = KeyDefinition<UserID?>(key: "userid")
+
+    // RawValue
     let rawValueEnum = KeyDefinition(key: "rawValueEnum", defaultValue: RawValueEnum.bbb)
+    let rawValueArray = KeyDefinition<[RawValueEnum]>(key: "rawValueArray", defaultValue: [.aaa])
+
+    let complexDictionary = KeyDefinition<[String: [String: [RawValueEnum]]]>(key: "complexDictionary", defaultValue: [
+        "A" : ["B": [.aaa]]
+    ])
 
     // Nested group
     let group = NestedGroup()
@@ -347,4 +388,25 @@ struct Foo: Codable, Sendable, Equatable {
 
 enum RawValueEnum: Int, KeyValueStorageValue {
     case aaa, bbb, ccc
+}
+
+struct UserID: ExpressibleByStringLiteral, KeyValueStorageValue, Equatable {
+    let value: String
+
+    init(value: String) {
+        self.value = value
+    }
+
+    init(stringLiteral value: StringLiteralType) {
+        self.value = value
+    }
+
+    func storedValue() -> (any Sendable) {
+        value
+    }
+
+    static func keyValueStorageValue(from value: (any Sendable)) -> UserID? {
+        guard let value = value as? String else { return nil }
+        return UserID(value: value)
+    }
 }

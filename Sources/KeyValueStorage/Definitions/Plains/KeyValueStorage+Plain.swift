@@ -10,11 +10,17 @@ extension KeyValueStorage {
             let definition = keys[keyPath: keyPath]
             definition.record()
             definition.observeIfNeed(backend)
-            return Value.fetch(for: definition.key, from: backend) ?? definition.defaultValue
+            let rawValue = backend.read(for: definition.key)
+            return rawValue.flatMap { Value.keyValueStorageValue(from: $0) } ?? definition.defaultValue
         }
         nonmutating set {
             let definition = keys[keyPath: keyPath]
-            return newValue.store(for: definition.key, from: backend)
+            if newValue.isNil {
+                backend.delete(for: definition.key)
+            } else {
+                let rawValue = newValue.storedValue()
+                backend.write(rawValue, for: definition.key)
+            }
         }
     }
 

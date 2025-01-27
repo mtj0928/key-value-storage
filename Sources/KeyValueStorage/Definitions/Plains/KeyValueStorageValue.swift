@@ -1,99 +1,84 @@
 import Foundation
 
 public protocol KeyValueStorageValue: Sendable {
-    func store(for key: String, from backend: some KeyValueStorageBackend)
-    static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Self?
+    var isNil: Bool { get }
+    func storedValue() -> (any Sendable)
+    static func keyValueStorageValue(from value: (any Sendable)) -> Self?
+}
+
+extension KeyValueStorageValue {
+    public var isNil: Bool { false }
+}
+
+fileprivate protocol PrimitiveStorageValue: Sendable, KeyValueStorageValue {}
+
+extension PrimitiveStorageValue {
+    public func storedValue() -> (any Sendable) {
+        self
+    }
+
+    public static func keyValueStorageValue(from value: (any Sendable)) -> Self? {
+        value as? Self
+    }
 }
 
 // MARK: - Conformance
 
-extension Bool: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setBool(self, for: key)
+extension Bool: PrimitiveStorageValue {}
+extension Int: PrimitiveStorageValue {}
+extension Float: PrimitiveStorageValue {}
+extension Double: PrimitiveStorageValue {}
+extension String: PrimitiveStorageValue {}
+extension URL: PrimitiveStorageValue {}
+extension Data: PrimitiveStorageValue {}
+
+extension Array: KeyValueStorageValue where Element: KeyValueStorageValue {
+    public func storedValue() -> (any Sendable) {
+        map { $0.storedValue() }
     }
-    
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Bool? {
-        backend.has(key) ? backend.bool(for: key) : nil
+
+    public static func keyValueStorageValue(from value: (any Sendable)) -> [Element]? {
+        guard let array = value as? [(any Sendable)] else { return nil }
+        return array.compactMap { Element.keyValueStorageValue(from: $0) }
     }
 }
 
-extension Int: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setInt(self, for: key)
+extension Dictionary: KeyValueStorageValue where Key == String, Value: KeyValueStorageValue {
+    public func storedValue() -> (any Sendable) {
+        mapValues { $0.storedValue() }
     }
 
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Int? {
-        backend.has(key) ? backend.int(for: key) : nil
-    }
-}
-
-extension Float: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setFloat(self, for: key)
-    }
-    
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Float? {
-        backend.has(key) ? backend.float(for: key) : nil
-    }
-}
-
-extension Double: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setDouble(self, for: key)
-    }
-    
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Double? {
-        backend.has(key) ? backend.double(for: key) : nil
-    }
-}
-
-extension String: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setString(self, for: key)
-    }
-
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> String? {
-        backend.has(key) ? backend.string(for: key) : nil
-    }
-}
-
-extension URL: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setURL(self, for: key)
-    }
-    
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> URL? {
-        backend.has(key) ? backend.url(for: key) : nil
-    }
-}
-
-extension Data: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        backend.setData(self, for: key)
-    }
-
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Data? {
-        backend.has(key) ? backend.data(for: key) : nil
+    public static func keyValueStorageValue(from value: (any Sendable)) -> Dictionary<String, Value>? {
+        guard let dictionary = value as? [String: (any Sendable)] else { return nil }
+        return dictionary.compactMapValues { Value.keyValueStorageValue(from: $0) }
     }
 }
 
 extension Optional: KeyValueStorageValue where Wrapped: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        self?.store(for: key, from: backend)
+    public var isNil: Bool {
+        switch self {
+        case .none: return true
+        case .some(let wrapped): return wrapped.isNil
+        }
     }
-    
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Optional<Wrapped>? {
-        Wrapped.fetch(for: key, from: backend)
+
+    public func storedValue() -> (any Sendable) {
+        guard let wrapped = self else { return self }
+        return wrapped.storedValue()
+    }
+
+    public static func keyValueStorageValue(from value: (any Sendable)) ->  Optional<Wrapped>? {
+        Wrapped.keyValueStorageValue(from: value)
     }
 }
 
 extension KeyValueStorageValue where Self: RawRepresentable, RawValue: KeyValueStorageValue {
-    public func store(for key: String, from backend: some KeyValueStorageBackend) {
-        rawValue.store(for: key, from: backend)
+    public func storedValue() -> (any Sendable) {
+        rawValue.storedValue()
     }
 
-    public static func fetch(for key: String, from backend: some KeyValueStorageBackend) -> Self? {
-        guard let rawValue = RawValue.fetch(for: key, from: backend) else { return nil }
+    public static func keyValueStorageValue(from value: (any Sendable)) -> Self? {
+        guard let rawValue = RawValue.keyValueStorageValue(from: value) else { return nil }
         return Self(rawValue: rawValue)
     }
 }

@@ -1,5 +1,5 @@
 # key-value-storage
-A type-safe, injectable and type-safe wrapper of UserDefaults.
+A type-safe, injectable and observable wrapper of UserDefaults.
 
 ## Simple Example
 1. Define keys and types you want to save.

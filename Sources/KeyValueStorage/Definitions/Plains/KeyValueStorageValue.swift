@@ -33,6 +33,7 @@ extension Double: PrimitiveStorageValue {}
 extension String: PrimitiveStorageValue {}
 extension URL: PrimitiveStorageValue {}
 extension Data: PrimitiveStorageValue {}
+extension Date: PrimitiveStorageValue {}
 
 extension Array: KeyValueStorageValue where Element: KeyValueStorageValue {
     public func storedValue() -> [Element.StoredValue] {

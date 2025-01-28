@@ -31,6 +31,11 @@ struct KeyValueStorageTest {
 
         storage.string = nil
         #expect(storage.string == nil)
+
+        let date = Date()
+        #expect(storage.date != date)
+        storage.date = date
+        #expect(storage.date == date)
     }
 
     @Test(arguments: TargetBackend.allCases)
@@ -359,6 +364,7 @@ struct TestKeys: KeyGroup {
     let double = KeyDefinition(key: "double", defaultValue: 3.14)
     let bool = KeyDefinition(key: "bool", defaultValue: false)
     let string = KeyDefinition<String?>(key: "string")
+    let date = KeyDefinition(key: "date", defaultValue: Date())
     let array = KeyDefinition<[String]>(key: "array", defaultValue: ["aaa"])
     let dictionary = KeyDefinition<[String: [String: [Int]]]>(key: "dictionary", defaultValue: [:])
 

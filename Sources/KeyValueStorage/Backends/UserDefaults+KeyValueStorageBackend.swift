@@ -46,7 +46,8 @@ extension UserDefaults {
             value is Float ||
             value is String ||
             value is URL ||
-            value is Data {
+            value is Data ||
+            value is Date {
             return
         }
 

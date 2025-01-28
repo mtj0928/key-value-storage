@@ -27,6 +27,7 @@ The following types are supported.
 - Double
 - String
 - URL
+- Date
 - Data
 - Array
 - Dictionary

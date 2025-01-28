@@ -14,7 +14,7 @@ extension UserDefaults: KeyValueStorageBackend {
         set(value, forKey: key)
     }
 
-    public func delete(for key: String) {
+    public func remove(for key: String) {
         removeObject(forKey: key)
     }
 

@@ -41,6 +41,11 @@ extension KeyValueStorage {
     public func stream<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) -> KeyValueStoragePublisher {
         publisher(key: key).eraseToAnyPublisher().values
     }
+
+    public func remove<Value: Codable>(key: KeyPath<Keys, JSONKeyDefinition<Value>>) {
+        let definition = keys[keyPath: key]
+        backend.remove(for: definition.key)
+    }
 }
 
 @Observable

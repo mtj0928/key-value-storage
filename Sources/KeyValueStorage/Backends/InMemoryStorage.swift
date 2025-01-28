@@ -24,7 +24,7 @@ public final class InMemoryStorage: NSObject, KeyValueStorageBackend {
         }
     }
 
-    public func delete(for key: String) {
+    public func remove(for key: String) {
         let key = internalKey(key)
         return lockedValues.withLock { values in
             values.removeValue(forKey: key)

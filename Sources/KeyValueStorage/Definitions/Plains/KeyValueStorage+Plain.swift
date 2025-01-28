@@ -16,7 +16,7 @@ extension KeyValueStorage {
         nonmutating set {
             let definition = keys[keyPath: keyPath]
             if newValue.isNil {
-                backend.delete(for: definition.key)
+                backend.remove(for: definition.key)
             } else {
                 let rawValue = newValue.storedValue()
                 backend.write(rawValue, for: definition.key)
@@ -32,6 +32,11 @@ extension KeyValueStorage {
 
     public func stream<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) -> KeyValueStoragePublisher {
         publisher(key: key).eraseToAnyPublisher().values
+    }
+
+    public func remove<Value: KeyValueStorageValue>(key: KeyPath<Keys, KeyDefinition<Value>>) {
+        let definition = keys[keyPath: key]
+        backend.remove(for: definition.key)
     }
 }
 

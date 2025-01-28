@@ -3,7 +3,7 @@ import Foundation
 public protocol KeyValueStorageBackend: Sendable {
     func write(_ value: any Sendable, for key: String)
     func read(for key: String) -> (any Sendable)?
-    func delete(for key: String)
+    func remove(for key: String)
     func has(_ key: String) -> Bool
     func reset()
     func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable

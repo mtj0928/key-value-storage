@@ -116,6 +116,24 @@ struct KeyValueStorageTest {
         #expect(!storage.foo.bool)
     }
 
+    @Test(arguments: TargetBackend.allCases)
+    func removeUsage(_ targetBackend: TargetBackend) async throws {
+        let backend = targetBackend.makeBackend()
+        let storage = KeyValueStorage<TestKeys>(backend: backend)
+
+        let originalInteger = storage.integer
+        let originalFooNumber = storage.foo.number
+
+        storage.integer += 1
+        storage.foo.number += 1
+
+        storage.remove(key: \.integer)
+        storage.remove(key: \.foo)
+
+        #expect(storage.integer == originalInteger)
+        #expect(storage.foo.number == originalFooNumber)
+    }
+
     // MARK: - Observation
 
     @Test(arguments: TargetBackend.allCases)

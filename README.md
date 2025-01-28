@@ -21,16 +21,16 @@ storage.launchCount += 1 // 1
 ## Usages
 ### Key Definitions 
 The following types are supported.
-- Bool
-- Int
-- Float
-- Double
-- String
-- URL
-- Date
-- Data
-- Array
-- Dictionary
+- `Bool`
+- `Int`
+- `Float`
+- `Double`
+- `String`
+- `URL`
+- `Date`
+- `Data`
+- `Array`
+- `Dictionary`
 
 
 ### Codable support (JSON)

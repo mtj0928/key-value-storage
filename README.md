@@ -24,6 +24,29 @@ storage.launchCount = launchCount + 1
 strorage.lastLaunchDate = .now
 ```
 
+## Requirements
+Swift 6+
+
+### Platforms
+- iOS 17+
+- macOS 14+
+- watchOS 10+
+- visionOS 1+
+- tvOS 17+
+
+## Installation
+You can add this package by Swift Package Manager.
+```swift
+dependencies: [
+    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
+],
+targets: [
+    .target(name: "YOUR_TARGETS", dependencies: [
+      .product(name: "KeyValueStorage", package: "key-value-storage")
+    ]),
+]
+```
+
 ## Key Definitions
 As shown in the above section, defining keys in a key group makes your code type-safe.
 ```swift
@@ -180,27 +203,3 @@ storage.publishers(key: \.counter)
 ```
 > [!NOTE]
 > Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.
-
-## Requirements
-Swift 6+.
-
-### Platforms
-- iOS 17
-- macOS 14
-- watchOS 10
-- visionOS 1
-- tvOS 17
-
-## Installation
-You can add this package by Swift Package Manager.
-```swift
-dependencies: [
-    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
-],
-targets: [
-    .target(name: "YOUR_TARGETS", dependencies: [
-      .product(name: "KeyValueStorage", package: "key-value-storage")
-    ]),
-]
-```
-

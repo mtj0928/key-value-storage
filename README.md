@@ -38,7 +38,7 @@ You can specify all types UserDefaults can accept to the type of `KeyDefinition`
 If you specify `Optional` to the type of KeyDefinition like `lastLaunchDate`, you can emit the default value.
 
 ### Custom Type Support
-You can store and read your custom type by making the type conform to `KeyValueStorageValue`
+You can store and read your custom type by making the type conform to `KeyValueStorageValue`.
 If your type is `RawRepresentable`, it's enough to add the conformance.
 ```swift
 enum Fruit: Int, KeyValueStorageValue {

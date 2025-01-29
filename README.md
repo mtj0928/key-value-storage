@@ -174,3 +174,17 @@ storage.publishers(key: \.counter)
 ```
 > [!NOTE]
 > Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.
+
+## Installation
+You can add this package by Swift Package Manager.
+```swift
+dependencies: [
+    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
+],
+targets: [
+    .target(name: "YOUR_TARGETS", dependencies: [
+      .product(name: "KeyValueStorage", package: "key-value-storage")
+    ]),
+]
+```
+

@@ -175,6 +175,16 @@ storage.publishers(key: \.counter)
 > [!NOTE]
 > Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.
 
+## Requirements
+Swift 6+.
+
+### Platforms
+- iOS 17
+- macOS 14
+- watchOS 10
+- visionOS 1
+- tvOS 17
+
 ## Installation
 You can add this package by Swift Package Manager.
 ```swift

@@ -2,8 +2,8 @@ import Foundation
 
 @dynamicMemberLookup
 public struct KeyValueStorage<Keys: KeyGroup>: Sendable {
-    public let backend: any KeyValueStorageBackend
-    public let keys: Keys
+    let backend: any KeyValueStorageBackend
+    let keys: Keys
 
     private init(backend: some KeyValueStorageBackend, keys: Keys) {
         self.backend = backend

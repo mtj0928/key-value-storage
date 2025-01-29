@@ -11,7 +11,7 @@ struct AppKeys: KeyGroup {
 }
 ```
 
-2. Make a storage and read/write the value via the auto generated property.
+2. Make a storage and read / write the value via the auto generated property.
 
 ```swift
 let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
@@ -24,8 +24,7 @@ storage.launchCount = launchCount + 1
 strorage.lastLaunchDate = .now
 ```
 
-## Usages
-### Key Definitions
+## Key Definitions
 As shown in the above section, defining keys in a key group makes your code type-safe.
 ```swift
 struct AppKeys: KeyGroup {
@@ -36,7 +35,7 @@ struct AppKeys: KeyGroup {
 
 You can specify all types UserDefaults can accept to the type of `KeyDefinition`.
 
-If you specify `Optional` to the type of KeyDefinition like `lastLaunchDate`, you can emit the default value.
+If you specify `Optional` to the type of KeyDefinition like `lastLaunchDate`, you can omit the default value.
 
 ### Custom Type Support
 You can store and read your custom type by making the type conform to `KeyValueStorageValue`.
@@ -55,7 +54,7 @@ struct AppKeys: KeyGroup {
 }
 
 let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
-storage.fruit = .banana
+let fruit: Fruit = storage.fruit
 ```
 
 In other cases, you can write custom serialization / deserialization logics.
@@ -83,15 +82,95 @@ struct AppKeys: KeyGroup {
 }
 
 let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
-storage.person = Person(name: "foo", age: 20)   
+let person: Person? = storage.person
 ```
 
-### Codable support (JSON)
-Also, you can easily store your custom type by using `JSONKeyDefinition`
+### Codable Support (JSON)
+Also, you can easily store your type inhering Codeable by using `JSONKeyDefinition`.
+
+```swift
+struct Account: Codable {
+    var name: String
+    var email: String
+}
+
+struct AppKeys: KeyGroup {
+    let account = JSONKeyDefinition<Account?>(key: "account")
+}
+
+let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+let account: Account? = storage.account
+```
 
 ### Key Group
+`KeyGroup` is a combination of keys, and all keys in the same group are used in the same storage.
 
-## Observe the changes
+And, the group can be nested in another group.
+
+So, for example, you can divide the keys by purpose and combine them into one group.
+```swift
+struct AppKeys: KeyGroup {
+    let launchCount = KeyDefinition(key: "launchCount", defaultValue: 0)
+    let debug = DebugKeys()
+}
+
+struct DebugKeys: KeyGroup {
+    let showConsole = KeyDefinition<Bool>(key: "showConsole", defaultValue: false)
+}
+
+let standardStorage = KeyValueStorage<AppKeys>(backend: InMemoryStorage())
+let launchCount = standardStorage.launchCount
+let showConsole = standardStorage.debug.showConsole
+```
+
+## Observe Changes
 ### Observation
+`KeyValueStorage` supports Observation by default.
+
+For example, this view is automatically updated when the counter is updated.
+```swift
+struct Keys: KeyGroup {
+    let counter = KeyDefinition(key: "counter", defaultValue: 0)
+}
+
+struct ContentView: View {
+    var storage: KeyValueStorage<Keys>
+
+    var body: some View {
+        VStack {
+            Text("\(storage.counter)")
+            Button("add") {
+                storage.counter += 1
+            }
+        }
+    }
+}
+```
+> [!NOTE]
+> Please capture the KeyValueStorage for as long as you need to observe it, because the observation is finished when the KeyValueStorage is released.
+
 ### AsyncSequence
+You can observe the changes to key by `AsyncSequence`
+```swift
+let storage: KeyValueStorage<Keys> = ...
+Task {
+    for await _ in storage.stream(key: \.counter) {
+        print("New value: \(storage.counter)")
+    }
+}
+```
+> [!NOTE]
+> Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.
+
 ### Combine
+You can observe the changes to key by `AsyncSequence`
+
+```swift
+let storage: KeyValueStorage<Keys> = ...
+storage.publishers(key: \.counter)
+    .sink {
+        print("New value: \(storage.counter)")
+    }
+```
+> [!NOTE]
+> Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.

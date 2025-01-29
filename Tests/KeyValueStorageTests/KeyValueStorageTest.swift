@@ -424,6 +424,7 @@ enum RawValueEnum: Int, KeyValueStorageValue {
 }
 
 struct UserID: ExpressibleByStringLiteral, KeyValueStorageValue, Equatable {
+    typealias StoredRawValue = String
     let value: String
 
     init(value: String) {
@@ -434,11 +435,11 @@ struct UserID: ExpressibleByStringLiteral, KeyValueStorageValue, Equatable {
         self.value = value
     }
 
-    func storedValue() -> String {
+    func serialize() -> String {
         value
     }
 
-    static func keyValueStorageValue(from value: String) -> UserID? {
+    static func deserialize(from value: String) -> UserID? {
         UserID(value: value)
     }
 }

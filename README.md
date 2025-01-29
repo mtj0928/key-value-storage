@@ -15,6 +15,7 @@ struct AppKeys: KeyGroup {
 
 ```swift
 let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+
 // Read
 let launchCount = storage.launchCount 
 
@@ -39,6 +40,8 @@ If you specify `Optional` to the type of KeyDefinition like `lastLaunchDate`, yo
 
 ### Custom Type Support
 You can store and read your custom type by making the type conform to `KeyValueStorageValue`.
+
+
 If your type is `RawRepresentable`, it's enough to add the conformance.
 ```swift
 enum Fruit: Int, KeyValueStorageValue {
@@ -46,10 +49,41 @@ enum Fruit: Int, KeyValueStorageValue {
     case banana
     case orange
 }
+
+struct AppKeys: KeyGroup {
+    let fruit = KeyDefinition<Fruit>(key: "fruit", defaultValue: .apple)
+}
+
+let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+storage.fruit = .banana
 ```
 
-In other cases, you can write custom conversion logic.
+In other cases, you can write custom serialization / deserialization logics.
 ```swift
+struct Person: KeyValueStorageValue, Equatable {
+    typealias StoredRawValue = [String: any Sendable]
+
+    var name: String
+    var age: Int
+
+    func serialize() -> StoredRawValue {
+        ["name": name, "age": age]
+    }
+
+    static func deserialize(from dictionary: StoredRawValue) -> Person? {
+        guard let name = dictionary["name"] as? String,
+              let age = dictionary["age"] as? Int
+        else { return nil }
+        return Person(name: name, age: age)
+    }
+}
+
+struct AppKeys: KeyGroup {
+    let person = KeyDefinition<Person?>(key: "person")
+}
+
+let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+storage.person = Person(name: "foo", age: 20)   
 ```
 
 ### Codable support (JSON)

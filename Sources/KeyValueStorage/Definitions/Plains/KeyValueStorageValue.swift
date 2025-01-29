@@ -1,11 +1,19 @@
 import Foundation
 
+/// A  protocol which can be stored.
 public protocol KeyValueStorageValue: Sendable {
-    associatedtype StoredValue: Sendable
+    /// A raw value which can be store in the backend.
+    associatedtype StoredRawValue: Sendable
 
+    /// A boolean value indicating the value is `nil` or not.
     var isNil: Bool { get }
-    func storedValue() -> StoredValue
-    static func keyValueStorageValue(from value: StoredValue) -> Self?
+
+    /// Serialize the value to the raw value which can be store in the backend.
+    func serialize() -> StoredRawValue
+
+    /// Deserialize  the stored raw value to this type.
+    /// `nil` is returned if the deserialize is failed.
+    static func deserialize(from value: StoredRawValue) -> Self?
 }
 
 extension KeyValueStorageValue {
@@ -15,11 +23,11 @@ extension KeyValueStorageValue {
 fileprivate protocol PrimitiveStorageValue: Sendable, KeyValueStorageValue {}
 
 extension PrimitiveStorageValue {
-    public func storedValue() -> Self {
+    public func serialize() -> Self {
         self
     }
 
-    public static func keyValueStorageValue(from value: Self) -> Self? {
+    public static func deserialize(from value: Self) -> Self? {
         value
     }
 }
@@ -36,22 +44,22 @@ extension Data: PrimitiveStorageValue {}
 extension Date: PrimitiveStorageValue {}
 
 extension Array: KeyValueStorageValue where Element: KeyValueStorageValue {
-    public func storedValue() -> [Element.StoredValue] {
-        map { $0.storedValue() }
+    public func serialize() -> [Element.StoredRawValue] {
+        map { $0.serialize() }
     }
 
-    public static func keyValueStorageValue(from value: [Element.StoredValue]) -> [Element]? {
-        value.compactMap { Element.keyValueStorageValue(from: $0) }
+    public static func deserialize(from value: [Element.StoredRawValue]) -> [Element]? {
+        value.compactMap { Element.deserialize(from: $0) }
     }
 }
 
 extension Dictionary: KeyValueStorageValue where Key == String, Value: KeyValueStorageValue {
-    public func storedValue() -> [String: Value.StoredValue] {
-        mapValues { $0.storedValue() }
+    public func serialize() -> [String: Value.StoredRawValue] {
+        mapValues { $0.serialize() }
     }
 
-    public static func keyValueStorageValue(from value: [String: Value.StoredValue]) -> Dictionary<String, Value>? {
-        value.compactMapValues { Value.keyValueStorageValue(from: $0) }
+    public static func deserialize(from value: [String: Value.StoredRawValue]) -> Dictionary<String, Value>? {
+        value.compactMapValues { Value.deserialize(from: $0) }
     }
 }
 
@@ -63,23 +71,23 @@ extension Optional: KeyValueStorageValue where Wrapped: KeyValueStorageValue {
         }
     }
 
-    public func storedValue() -> Wrapped.StoredValue? {
+    public func serialize() -> Wrapped.StoredRawValue? {
         guard let wrapped = self else { return nil }
-        return wrapped.storedValue()
+        return wrapped.serialize()
     }
 
-    public static func keyValueStorageValue(from value: Wrapped.StoredValue?) ->  Optional<Wrapped>? {
-        value.flatMap { Wrapped.keyValueStorageValue(from: $0) }
+    public static func deserialize(from value: Wrapped.StoredRawValue?) ->  Optional<Wrapped>? {
+        value.flatMap { Wrapped.deserialize(from: $0) }
     }
 }
 
 extension KeyValueStorageValue where Self: RawRepresentable, RawValue: KeyValueStorageValue {
-    public func storedValue() -> RawValue.StoredValue {
-        rawValue.storedValue()
+    public func serialize() -> RawValue.StoredRawValue {
+        rawValue.serialize()
     }
 
-    public static func keyValueStorageValue(from value: RawValue.StoredValue) -> Self? {
-        guard let rawValue = RawValue.keyValueStorageValue(from: value) else { return nil }
+    public static func deserialize(from value: RawValue.StoredRawValue) -> Self? {
+        guard let rawValue = RawValue.deserialize(from: value) else { return nil }
         return Self(rawValue: rawValue)
     }
 }

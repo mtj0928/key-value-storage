@@ -11,7 +11,7 @@ struct AppKeys: KeyGroup {
 }
 ```
 
-2. Make a storage and read / write the value via the auto generated property.
+2. Make a storage and read / write the value by `@dynamicMemberLookup`
 
 ```swift
 let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
@@ -34,8 +34,14 @@ struct AppKeys: KeyGroup {
 ```
 
 You can specify all types UserDefaults can accept to the type of `KeyDefinition`.
-
 If you specify `Optional` to the type of KeyDefinition like `lastLaunchDate`, you can omit the default value.
+
+And you can read and write the value.
+```swift
+let storage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+let lastLaunchDate: Int = storage.lastLaunchDate
+storage.lastLaunchDate = lastLaunchDate + 1
+```
 
 ### Custom Type Support
 You can store and read your custom type by making the type conform to `KeyValueStorageValue`.

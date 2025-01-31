@@ -1,0 +1,38 @@
+name: DocC
+on:
+  push:
+    branches:
+      - main
+jobs:
+  DocC:
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: "/Applications/Xcode_16.2.app/Contents/Developer"
+      DOCC_BUILD: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build DocC
+        run: |
+          swift package --allow-writing-to-directory ./docs generate-documentation \
+          --target KeyValueStorage \
+          --disable-indexing \
+          --output-path ./docs \
+          --transform-for-static-hosting \
+          --hosting-base-path key-value-storage
+      - uses: actions/upload-pages-artifact@v3
+        id: docs
+        with:
+          path: docs
+  DeployDocC:
+    needs: DocC
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: docs
+        uses: actions/deploy-pages@v4

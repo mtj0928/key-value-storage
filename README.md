@@ -1,6 +1,12 @@
 # key-value-storage
 A type-safe, observable, and injectable wrapper of UserDefaults.
 
+## Concepts
+`KeyValueStorage` is developed based on the following three concepts:
+1. **Type-safety:** You can read and write common types such as `Int` and `String` and your custom types in a type-safe manner.
+2. **Injectable Backend:** You can easily change the backend storage where values are stored to any ` UserDefaults` or ` InMemoryStorage`.
+3. **Observable Changes:** `KeyValueStorage` supports Observation, AsyncSequence, and Publisher of Combine.
+
 ## Simple Example
 1. Define keys and types you want to save.
 
@@ -47,7 +53,8 @@ targets: [
 ]
 ```
 
-## Key Definitions
+## Type-safety
+### Key Definitions
 As shown in the above section, defining keys in a key group makes your code type-safe.
 ```swift
 struct AppKeys: KeyGroup {
@@ -147,9 +154,23 @@ struct DebugKeys: KeyGroup {
     let showConsole = KeyDefinition<Bool>(key: "showConsole", defaultValue: false)
 }
 
-let standardStorage = KeyValueStorage<AppKeys>(backend: InMemoryStorage())
+let standardStorage = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
 let launchCount = standardStorage.launchCount
 let showConsole = standardStorage.debug.showConsole
+```
+
+## Injectable Backend
+
+You can easily change the backend where values are stored to any ` UserDefaults`.
+```swift
+let standardStorage = KeyValueStorage<StandardKeys>(backend: UserDefaults.standard)
+let appGroupStorage = KeyValueStorage<AppGroupKeys>(backend: UserDefaults(suiteName: "APP_GROUP")!)
+```
+
+`InMemoryStorage` is also available as the backend.  
+This is useful when you want to run unit tests in parallel.
+```swift
+let standardStorage = KeyValueStorage<StandardKeys>(backend: InMemoryStorage())
 ```
 
 ## Observe Changes

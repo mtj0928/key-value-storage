@@ -40,7 +40,7 @@ extension KeyValueStorage {
     }
 }
 
-/// A key definition.
+/// A key definition for ``KeyValueStorageValue``
 ///
 /// This is an example of this class.
 /// ```swift

@@ -1,6 +1,7 @@
 import Foundation
 import os
 
+/// A backend of ``KeyValueStorage`` which stores the value in memory.
 public final class InMemoryStorage: NSObject, KeyValueStorageBackend {
     private let lockedValues = OSAllocatedUnfairLock<[String: any Sendable]>(initialState: [:])
     public var values: [String: any Sendable] {
@@ -44,9 +45,9 @@ public final class InMemoryStorage: NSObject, KeyValueStorageBackend {
         }
     }
 
-    public func observe(_ key: String, changes: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
+    public func observe(_ key: String, onChange: @escaping @Sendable () -> Void) -> KeyValueObserveCancellable {
         let key = internalKey(key)
-        let observer = KeyValueObserver(onChange: changes)
+        let observer = KeyValueObserver(onChange: onChange)
         addObserver(observer, forKeyPath: key, options: [], context: nil)
         return KeyValueObserveCancellable { [weak self] in
             self?.removeObserver(observer, forKeyPath: key)

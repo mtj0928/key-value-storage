@@ -48,13 +48,27 @@ extension KeyValueStorage {
     }
 }
 
+/// A key definition and the value is converted to `Data` in JSON.
+///
+/// This is an example of the key.
+/// ```swift
+/// let foo = JSONKeyDefinition<Foo?>(key: "foo")
+/// ```
 @Observable
 public final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
+    /// A key of the value.
     public let key: String
+
+    /// A default value when a value is not store in the backend.
     public let defaultValue: Value
+
+    /// An encoder converting a value to `Data`.
     public let encoder: JSONEncoder
+
+    /// A decoder converting `Data` to a value.
     public let decoder: JSONDecoder
-    public var publisher: any Publisher<Void, Never> { subject }
+
+    var publisher: any Publisher<Void, Never> { subject }
     private let subject = PassthroughSubject<Void, Never>()
 
     private let logger = Logger(subsystem: "KeyValueStorage", category: "JSONKeyDefinition")

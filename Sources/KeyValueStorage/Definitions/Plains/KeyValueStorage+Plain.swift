@@ -40,11 +40,18 @@ extension KeyValueStorage {
     }
 }
 
+/// A key definition.
+///
+/// This is an example of this class.
+/// ```swift
+/// let counter = KeyDefinition(key: "counter", defaultValue: 0)
+/// ```
 @Observable
 public final class KeyDefinition<Value: KeyValueStorageValue>: Sendable {
     public let key: String
     public let defaultValue: Value
-    public var publisher: any Publisher<Void, Never> { subject }
+
+    var publisher: any Publisher<Void, Never> { subject }
     private let subject = PassthroughSubject<Void, Never>()
 
     private let logger = Logger(subsystem: "KeyValueStorage", category: "KeyDefinition")

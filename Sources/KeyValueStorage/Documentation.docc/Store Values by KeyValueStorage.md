@@ -89,7 +89,7 @@ struct Person: KeyValueStorageValue, Equatable {
 ```
 
 > Note: 
-If values which cannot be stored in UserDefaults contain the serialized values, the package asserts it.
+If the serialized values contains values which cannot be stored in UserDefaults, the package asserts it.
 Note `nil` is also not allowed to be contained in the serialized values.
 
 ## Codable Support in JSON Format

@@ -215,7 +215,7 @@ Swift 6+
 You can add this package by Swift Package Manager.
 ```swift
 dependencies: [
-    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
+    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.3.0")
 ],
 targets: [
     .target(name: "YOUR_TARGETS", dependencies: [

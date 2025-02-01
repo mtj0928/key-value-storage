@@ -53,6 +53,9 @@ targets: [
 ]
 ```
 
+## Documentations
+Documentations including several articles are available [here](https://mtj0928.github.io/key-value-storage/documentation/keyvaluestorage/).
+
 ## Type-safety
 ### Key Definitions
 As shown in the above section, defining keys in a key group makes your code type-safe.
@@ -75,7 +78,6 @@ storage.lastLaunchDate = lastLaunchDate + 1
 
 ### Custom Type Support
 You can store and read your custom type by making the type conform to `KeyValueStorageValue`.
-
 
 If your type is `RawRepresentable`, it's enough to add the conformance.
 ```swift

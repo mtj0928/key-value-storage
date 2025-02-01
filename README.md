@@ -149,7 +149,7 @@ This is useful when you want to run unit tests in parallel.
 let standardStorage = KeyValueStorage<StandardKeys>(backend: InMemoryStorage())
 ```
 
-## Observe Changes
+## Observable Changes
 ### Observation
 `KeyValueStorage` supports Observation by default.
 

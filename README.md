@@ -1,12 +1,6 @@
 # key-value-storage
 A type-safe, observable, and injectable wrapper of UserDefaults.
 
-## Concepts
-`KeyValueStorage` is developed based on the following three concepts:
-1. **Type-safety:** You can read and write common types such as `Int` and `String` and your custom types in a type-safe manner.
-2. **Injectable Backend:** You can easily change the backend storage where values are stored to any ` UserDefaults` or ` InMemoryStorage`.
-3. **Observable Changes:** `KeyValueStorage` supports Observation, AsyncSequence, and Publisher of Combine.
-
 ## Simple Example
 1. Define keys and types you want to save.
 
@@ -30,31 +24,11 @@ storage.launchCount = launchCount + 1
 strorage.lastLaunchDate = .now
 ```
 
-## Requirements
-Swift 6+
-
-### Platforms
-- iOS 17+
-- macOS 14+
-- watchOS 10+
-- visionOS 1+
-- tvOS 17+
-
-## Installation
-You can add this package by Swift Package Manager.
-```swift
-dependencies: [
-    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
-],
-targets: [
-    .target(name: "YOUR_TARGETS", dependencies: [
-      .product(name: "KeyValueStorage", package: "key-value-storage")
-    ]),
-]
-```
-
-## Documentations
-Documentations including several articles are available [here](https://mtj0928.github.io/key-value-storage/documentation/keyvaluestorage/).
+## Concepts
+`KeyValueStorage` is developed based on the following three concepts:
+1. **Type-safety:** You can read and write common types such as `Int` and `String` and your custom types in a type-safe manner.
+2. **Injectable Backend:** You can easily change the backend storage where values are stored to any ` UserDefaults` or ` InMemoryStorage`.
+3. **Observable Changes:** `KeyValueStorage` supports Observation, AsyncSequence, and Publisher of Combine.
 
 ## Type-safety
 ### Key Definitions
@@ -226,3 +200,29 @@ storage.publishers(key: \.counter)
 ```
 > [!NOTE]
 > Please capture the KeyValueStorage for as long as you need to observe it, because the stream is finished when the KeyValueStorage is released.
+
+## Requirements
+Swift 6+
+
+### Platforms
+- iOS 17+
+- macOS 14+
+- watchOS 10+
+- visionOS 1+
+- tvOS 17+
+
+## Installation
+You can add this package by Swift Package Manager.
+```swift
+dependencies: [
+    .package(url: "https://github.com/mtj0928/key-value-storage", from: "0.1.0")
+],
+targets: [
+    .target(name: "YOUR_TARGETS", dependencies: [
+      .product(name: "KeyValueStorage", package: "key-value-storage")
+    ]),
+]
+```
+
+## Documentations
+Documentations including several articles are available [here](https://mtj0928.github.io/key-value-storage/documentation/keyvaluestorage/).

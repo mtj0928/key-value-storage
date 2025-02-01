@@ -122,7 +122,7 @@ let person: Person? = storage.person
 ```
 
 ### Codable Support (JSON)
-Also, you can easily store your type inhering Codeable by using `JSONKeyDefinition`.
+Also, you can easily store your type inhering Codable by using `JSONKeyDefinition`.
 
 ```swift
 struct Account: Codable {
@@ -139,7 +139,7 @@ let account: Account? = storage.account
 ```
 
 ### Key Group
-`KeyGroup` is a combination of keys, and all keys in the same group are used in the same storage.
+`KeyGroup` is a combination of keys, and all keys in the same group are ensured to be stored in the same storage.
 
 And, the group can be nested in another group.
 

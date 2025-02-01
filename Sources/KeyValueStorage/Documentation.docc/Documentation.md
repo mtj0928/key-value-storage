@@ -44,6 +44,9 @@ struct ContentView: View {
 
 ## Topics 
 ### Essentials
+- <doc:Store-Values-by-KeyValueStorage>
+- <doc:Change-Backend-Storage>
+- <doc:Organize-keys-by-KeyGroup>
 - ``KeyValueStorage``
 
 ### Key Definitions

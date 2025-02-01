@@ -2,6 +2,7 @@ import Foundation
 import os
 
 /// A backend of ``KeyValueStorage`` which stores the value in memory.
+/// This is useful when unit tests are run in parallel.
 public final class InMemoryStorage: NSObject, KeyValueStorageBackend {
     private let lockedValues = OSAllocatedUnfairLock<[String: any Sendable]>(initialState: [:])
     public var values: [String: any Sendable] {

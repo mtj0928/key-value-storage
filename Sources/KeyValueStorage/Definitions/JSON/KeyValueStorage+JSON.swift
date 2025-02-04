@@ -84,6 +84,7 @@ public final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
         self.defaultValue = defaultValue
         self.encoder = encoder
         self.decoder = decoder
+        validate(key: key)
     }
 
     public init<Wrapped: Codable>(
@@ -95,6 +96,7 @@ public final class JSONKeyDefinition<Value: Codable & Sendable>: Sendable {
         self.defaultValue = nil
         self.encoder = encoder
         self.decoder = decoder
+        validate(key: key)
     }
 
     deinit {

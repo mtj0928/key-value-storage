@@ -39,7 +39,6 @@ extension Int: PrimitiveStorageValue {}
 extension Float: PrimitiveStorageValue {}
 extension Double: PrimitiveStorageValue {}
 extension String: PrimitiveStorageValue {}
-extension URL: PrimitiveStorageValue {}
 extension Data: PrimitiveStorageValue {}
 extension Date: PrimitiveStorageValue {}
 

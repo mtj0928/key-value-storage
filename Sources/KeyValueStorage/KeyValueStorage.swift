@@ -47,4 +47,9 @@ public struct KeyValueStorage<Keys: KeyGroup>: Sendable {
         let group = keys[keyPath: keyPath]
         return KeyValueStorage<NestedGroup>(backend: backend, keys: group)
     }
+
+    /// Resets the data in the background.
+    public func reset() {
+        backend.reset()
+    }
 }

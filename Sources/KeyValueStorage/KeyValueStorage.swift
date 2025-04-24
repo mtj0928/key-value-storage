@@ -40,12 +40,24 @@ public struct KeyValueStorage<Keys: KeyGroup>: Sendable {
         self.backend = backend
         self.keys = Keys()
     }
-
     public subscript<NestedGroup: KeyGroup>(
         dynamicMember keyPath: KeyPath<Keys, NestedGroup>
     ) -> KeyValueStorage<NestedGroup> {
-        let group = keys[keyPath: keyPath]
-        return KeyValueStorage<NestedGroup>(backend: backend, keys: group)
+        get {
+            let group = keys[keyPath: keyPath]
+            return KeyValueStorage<NestedGroup>(backend: backend, keys: group)
+        }
+        nonmutating set {
+            // Do nothing, but `nonmutating set` is required for @Binding.
+            //
+            // ```swift
+            // @State var configuration = KeyValueStorage<AppKeys>(backend: UserDefaults.standard)
+            //
+            // var body: some View {
+            //     Toggle(foo, isOn: $configuration.nests.debug)
+            // }
+            // ```
+        }
     }
 
     /// Resets the data in the background.

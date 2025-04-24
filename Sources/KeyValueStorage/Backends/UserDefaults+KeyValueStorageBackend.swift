@@ -10,7 +10,6 @@ extension UserDefaults: KeyValueStorageBackend {
     }
 
     public func write(_ value: any Sendable, for key: String) {
-        validate(value: value)
         set(value, forKey: key)
     }
 
@@ -35,33 +34,6 @@ extension UserDefaults: KeyValueStorageBackend {
         return KeyValueObserveCancellable { [weak self] in
             self?.removeObserver(observer, forKeyPath: key)
         }
-    }
-}
-
-extension UserDefaults {
-    private func validate(value: any Sendable) {
-        if value is Bool ||
-            value is Int ||
-            value is Double ||
-            value is Float ||
-            value is String ||
-            value is URL ||
-            value is Data ||
-            value is Date {
-            return
-        }
-
-        if let value = value as? [String: any Sendable] {
-            value.values.forEach(validate(value:))
-            return
-        }
-        
-        if let value = value as? [any Sendable] {
-            value.forEach(validate(value:))
-            return
-        }
-
-        assertionFailure("Invalid value type \(Mirror(reflecting: value).subjectType)")
     }
 }
 

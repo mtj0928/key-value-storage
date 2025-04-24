@@ -13,6 +13,7 @@ struct KeyValueStorageTest {
         let backend = targetBackend.makeBackend()
         let storage = KeyValueStorage<TestKeys>(backend: backend)
         #expect(storage.integer == 123)
+        #expect(storage.cgfloat == 1.23)
         #expect(!storage.bool)
         #expect(storage.string == nil)
         #expect(storage.rawValueEnum == .bbb)
@@ -22,6 +23,9 @@ struct KeyValueStorageTest {
 
         storage.bool.toggle()
         #expect(storage.bool)
+
+        storage.cgfloat = 4.56
+        #expect(storage.cgfloat == 4.56)
 
         storage.string = "foo"
         #expect(storage.string == "foo")
@@ -380,6 +384,7 @@ struct TestKeys: KeyGroup {
     // Primitive
     let integer = KeyDefinition(key: "integer", defaultValue: 123)
     let double = KeyDefinition(key: "double", defaultValue: 3.14)
+    let cgfloat = KeyDefinition(key: "cgfloat", defaultValue: CGFloat(1.23))
     let bool = KeyDefinition(key: "bool", defaultValue: false)
     let string = KeyDefinition<String?>(key: "string")
     let date = KeyDefinition(key: "date", defaultValue: Date())

@@ -37,6 +37,7 @@ extension PrimitiveStorageValue {
 extension Bool: PrimitiveStorageValue {}
 extension Int: PrimitiveStorageValue {}
 extension Float: PrimitiveStorageValue {}
+extension CGFloat: PrimitiveStorageValue {}
 extension Double: PrimitiveStorageValue {}
 extension String: PrimitiveStorageValue {}
 extension Data: PrimitiveStorageValue {}
